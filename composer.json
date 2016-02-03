@@ -1,0 +1,23 @@
+{
+    "name": "cvo-technologies/Redmine",
+    "description": "Redmine plugin for CakePHP",
+    "type": "cakephp-plugin",
+    "require": {
+        "cakephp/datasource": "~3.0",
+        "muffin/webservice": "dev-master"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "4.1.*"
+    },
+    "autoload": {
+        "psr-4": {
+            "CvoTechnologies\\Redmine\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "CvoTechnologies\\Redmine\\Test\\": "tests",
+            "Cake\\Test\\": "./vendor/cakephp/cakephp/tests"
+        }
+    }
+}
