@@ -1,5 +1,5 @@
 {
-    "name": "cvo-technologies/Redmine",
+    "name": "cvo-technologies/cakephp-redmine",
     "description": "Redmine plugin for CakePHP",
     "type": "cakephp-plugin",
     "require": {
