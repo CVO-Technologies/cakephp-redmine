@@ -419,7 +419,7 @@ class RedmineWebserviceTest extends TestCase
                 ]
             ]
         ], [
-            'X-Redmine-Switch-User' => 'marlinc'
+            'X-Redmine-Switch-User: marlinc'
         ]));
         $query = new Query($this->webservice, new Endpoint([
             'connection' => new Connection([
