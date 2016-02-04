@@ -105,7 +105,7 @@ class RedmineWebservice extends Webservice
         }
 
         if (!isset($response->json[$this->endpoint()])) {
-            throw new MissingResultsException($url);
+            throw new MissingResultsException([$url]);
         }
 
         $results = $response->json[$this->endpoint()];
