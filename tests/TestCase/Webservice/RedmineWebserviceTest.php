@@ -442,6 +442,9 @@ class RedmineWebserviceTest extends TestCase
         $this->assertEquals('Hello', $resultSet->first()->subject);
     }
 
+    /**
+     * @expectedException \CvoTechnologies\Redmine\Webservice\Exception\UnexpectedStatusCodeException
+     */
     public function testReadNotOk()
     {
         $this->webservice->driver()->client($this->_clientMock('get', '/issues.json', [], [
@@ -461,9 +464,7 @@ class RedmineWebserviceTest extends TestCase
         ]));
         $query->read();
 
-        $result = $this->webservice->execute($query);
-
-        $this->assertFalse($result);
+        $this->webservice->execute($query);
     }
 
     /**
@@ -483,7 +484,7 @@ class RedmineWebserviceTest extends TestCase
         ]));
         $query->read();
 
-        $result = $this->webservice->execute($query);
+        $this->webservice->execute($query);
     }
 
     protected function _clientMock($method, $url, $parameters, $response, array $headers = [], $responseCode = 200)

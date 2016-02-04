@@ -5,6 +5,7 @@ namespace CvoTechnologies\Redmine\Webservice;
 use Cake\Utility\Inflector;
 use CvoTechnologies\Redmine\Schema;
 use CvoTechnologies\Redmine\Webservice\Exception\MissingResultsException;
+use CvoTechnologies\Redmine\Webservice\Exception\UnexpectedStatusCodeException;
 use Muffin\Webservice\Model\Endpoint;
 use Muffin\Webservice\Query;
 use Muffin\Webservice\ResultSet;
@@ -93,7 +94,7 @@ class RedmineWebservice extends Webservice
         /* @var \Cake\Network\Http\Response $response */
         $response = $this->driver()->client()->get($url, $requestParameters, $requestOptions);
         if (!$response->isOk()) {
-            return false;
+            throw new UnexpectedStatusCodeException([$response->statusCode()]);
         }
 
         // Single resource
