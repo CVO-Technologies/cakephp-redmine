@@ -24,12 +24,17 @@ class RedmineWebservice extends Webservice
         return '/' . $this->endpoint();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     protected function _executeReadQuery(Query $query, array $options = [])
     {
         $url = $this->getBaseUrl();
 
         $requestParameters = [];
         $requestOptions = [];
+
+        // Set API key if necessary
         if ($this->driver()->config('api_key')) {
             $requestParameters['key'] = $this->driver()->config('api_key');
         }
@@ -38,8 +43,11 @@ class RedmineWebservice extends Webservice
         if ((isset($query->clause('where')['id'])) && (!is_array($query->clause('where')['id']))) {
             $url .= '/' . $query->clause('where')['id'];
         } else {
+            // Loop over conditions and apply them to the query
             foreach ($query->clause('where') as $field => $value) {
                 $column = $query->endpoint()->schema()->column($field);
+
+                // Custom fields should use cf_x as parameter
                 if ($column['custom_field_id']) {
                     $field = 'cf_' . $column['custom_field_id'];
                 }
@@ -51,6 +59,7 @@ class RedmineWebservice extends Webservice
         $url .= '.json';
 
         $orderClauses = [];
+        // Turn ORM order clauses in a query parameter
         foreach ($query->clause('order') as $field => $value) {
             if (is_int($field)) {
                 $field = $value;
@@ -65,6 +74,7 @@ class RedmineWebservice extends Webservice
                 continue;
             }
 
+            // Replace ASC with asc and DESC with desc
             $orderClauses[] = $field . ':' . str_replace(['ASC', 'DESC'], ['asc', 'desc'], $value);
         }
 
@@ -79,14 +89,18 @@ class RedmineWebservice extends Webservice
             $requestParameters['offset'] = $query->clause('offset');
         }
 
+        // Include details using the API
         if (isset($query->getOptions()['include'])) {
             $include = $query->getOptions()['include'];
+            // If the value isn't a array, for example a string put it in a string
             if (!is_array($include)) {
                 $include = [$include];
             }
 
             $requestParameters['include'] = implode(',', $include);
         }
+
+        // Switch user if the 'user' options has been given
         if (isset($query->getOptions()['user'])) {
             $requestOptions['headers']['X-Redmine-Switch-User'] = $query->getOptions()['user'];
         }
@@ -112,6 +126,7 @@ class RedmineWebservice extends Webservice
         $results = $response->json[$this->endpoint()];
 
         $total = count($results);
+        // Set the amount if results to total_count if it has been provided by the API
         if (isset($response->json['total_count'])) {
             $total = $response->json['total_count'];
         }
@@ -127,15 +142,22 @@ class RedmineWebservice extends Webservice
 
         foreach ($result as $field => $value) {
             if ($field === 'custom_fields') {
+                // Loop over custom fields
                 foreach ($value as $customField) {
+                    // Get the alias for the custom field
                     $customFieldField = Schema::nameToField($customField['name']);
+
+                    // Lookup the field in the schema
                     $column = $endpoint->schema()->column($customFieldField);
 
+                    // If no value has been given set it to null
                     if (!isset($customField['value'])) {
                         $properties[$customFieldField] = null;
 
                         continue;
                     }
+
+                    // Cast value to correct type and set it as property
                     $properties[$customFieldField] = $this->castValue($customField['value'], $column['type']);
                 }
 
@@ -155,6 +177,14 @@ class RedmineWebservice extends Webservice
         return $this->_createResource($endpoint->resourceClass(), $properties);
     }
 
+    /**
+     * Cast value from API to PHP types
+     *
+     * @param mixed $value Vaue to cast
+     * @param string $type Type to convert the value to
+     *
+     * @return string|bool|int Casted value
+     */
     public function castValue($value, $type)
     {
         switch ($type) {
